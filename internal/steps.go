@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	sdk "github.com/GoCodeAlone/workflow/plugin/external/sdk"
 )
@@ -35,6 +36,9 @@ func (s *VectorUpsertStep) Execute(ctx context.Context, triggerData map[string]a
 	if err != nil {
 		return nil, err
 	}
+	if len(vectors) == 0 {
+		return &sdk.StepResult{Output: map[string]any{"error": "vector_upsert: 'vectors' is required and must be non-empty"}}, nil
+	}
 
 	if err := p.Upsert(ctx, vectors); err != nil {
 		return nil, fmt.Errorf("vector_upsert: %w", err)
@@ -62,6 +66,9 @@ func (s *VectorQueryStep) Execute(ctx context.Context, triggerData map[string]an
 	}
 
 	topK := intFromMap(merged, "top_k", 10)
+	if topK <= 0 {
+		return &sdk.StepResult{Output: map[string]any{"error": "vector_query: 'top_k' must be a positive integer"}}, nil
+	}
 	filter, _ := merged["filter"].(map[string]any)
 
 	matches, err := p.Query(ctx, vector, topK, filter)
@@ -176,6 +183,13 @@ func (s *VectorCreateIndexStep) Execute(ctx context.Context, triggerData map[str
 	}
 	if cfg.Dimension == 0 {
 		return nil, fmt.Errorf("vector_create_index: 'dimension' is required")
+	}
+
+	switch strings.ToLower(cfg.Cloud) {
+	case "aws", "gcp", "azure":
+		cfg.Cloud = strings.ToLower(cfg.Cloud)
+	default:
+		return &sdk.StepResult{Output: map[string]any{"error": fmt.Sprintf("vector_create_index: 'cloud' must be one of aws, gcp, azure; got %q", cfg.Cloud)}}, nil
 	}
 
 	if err := p.CreateIndex(ctx, cfg); err != nil {

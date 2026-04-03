@@ -298,6 +298,126 @@ func TestStep_ModuleNotFound(t *testing.T) {
 	}
 }
 
+func TestVectorUpsertStep_EmptyVectors(t *testing.T) {
+	setupMock(t)
+	step := &internal.VectorUpsertStep{}
+
+	// Missing vectors key entirely
+	cfg := map[string]any{"module": "test-vs"}
+	result, err := step.Execute(context.Background(), nil, nil, nil, nil, cfg)
+	if err != nil {
+		t.Fatalf("unexpected Go error: %v", err)
+	}
+	if result.Output["error"] == nil {
+		t.Error("expected error in output when vectors missing")
+	}
+
+	// Empty vectors slice
+	cfg2 := map[string]any{"module": "test-vs", "vectors": []any{}}
+	result2, err := step.Execute(context.Background(), nil, nil, nil, nil, cfg2)
+	if err != nil {
+		t.Fatalf("unexpected Go error: %v", err)
+	}
+	if result2.Output["error"] == nil {
+		t.Error("expected error in output when vectors empty")
+	}
+}
+
+func TestVectorQueryStep_NegativeTopK(t *testing.T) {
+	setupMock(t)
+	step := &internal.VectorQueryStep{}
+	cfg := map[string]any{
+		"module": "test-vs",
+		"vector": []any{0.1, 0.2, 0.3},
+		"top_k":  -5,
+	}
+
+	result, err := step.Execute(context.Background(), nil, nil, nil, nil, cfg)
+	if err != nil {
+		t.Fatalf("unexpected Go error: %v", err)
+	}
+	if result.Output["error"] == nil {
+		t.Error("expected error in output for negative top_k")
+	}
+}
+
+func TestVectorQueryStep_ZeroTopK(t *testing.T) {
+	setupMock(t)
+	step := &internal.VectorQueryStep{}
+	cfg := map[string]any{
+		"module": "test-vs",
+		"vector": []any{0.1, 0.2, 0.3},
+		"top_k":  0,
+	}
+
+	result, err := step.Execute(context.Background(), nil, nil, nil, nil, cfg)
+	if err != nil {
+		t.Fatalf("unexpected Go error: %v", err)
+	}
+	if result.Output["error"] == nil {
+		t.Error("expected error in output for zero top_k")
+	}
+}
+
+func TestVectorCreateIndexStep_InvalidCloud(t *testing.T) {
+	setupMock(t)
+	step := &internal.VectorCreateIndexStep{}
+	cfg := map[string]any{
+		"module":    "test-vs",
+		"name":      "test-index",
+		"dimension": 1536,
+		"cloud":     "typo-cloud",
+		"region":    "us-east-1",
+	}
+
+	result, err := step.Execute(context.Background(), nil, nil, nil, nil, cfg)
+	if err != nil {
+		t.Fatalf("unexpected Go error: %v", err)
+	}
+	if result.Output["error"] == nil {
+		t.Error("expected error in output for invalid cloud")
+	}
+}
+
+func TestVectorCreateIndexStep_EmptyCloud(t *testing.T) {
+	setupMock(t)
+	step := &internal.VectorCreateIndexStep{}
+	cfg := map[string]any{
+		"module":    "test-vs",
+		"name":      "test-index",
+		"dimension": 1536,
+		"region":    "us-east-1",
+	}
+
+	result, err := step.Execute(context.Background(), nil, nil, nil, nil, cfg)
+	if err != nil {
+		t.Fatalf("unexpected Go error: %v", err)
+	}
+	if result.Output["error"] == nil {
+		t.Error("expected error in output for empty cloud")
+	}
+}
+
+func TestVectorCreateIndexStep_CaseInsensitiveCloud(t *testing.T) {
+	setupMock(t)
+	step := &internal.VectorCreateIndexStep{}
+	cfg := map[string]any{
+		"module":    "test-vs",
+		"name":      "test-index",
+		"dimension": 1536,
+		"cloud":     "GCP",
+		"region":    "us-central1",
+	}
+
+	result, err := step.Execute(context.Background(), nil, nil, nil, nil, cfg)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if result.Output["created"] != "test-index" {
+		t.Errorf("expected created=test-index, got %v", result.Output["created"])
+	}
+}
+
 func TestProviderRegistry(t *testing.T) {
 	mp := &mockProvider{}
 	internal.RegisterProvider("test-reg", mp)
