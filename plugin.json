@@ -1,20 +1,28 @@
 {
-    "name": "workflow-plugin-TEMPLATE",
+    "name": "workflow-plugin-vectorstore",
     "version": "0.1.0",
-    "description": "TEMPLATE plugin for the workflow engine",
+    "description": "Vector database integration (Pinecone, Milvus) for RAG pipelines",
     "author": "GoCodeAlone",
     "license": "MIT",
     "type": "external",
     "tier": "community",
     "private": false,
-    "minEngineVersion": "0.3.55",
-    "keywords": [],
-    "homepage": "https://github.com/GoCodeAlone/workflow-plugin-TEMPLATE",
-    "repository": "https://github.com/GoCodeAlone/workflow-plugin-TEMPLATE",
+    "minEngineVersion": "0.3.56",
+    "keywords": ["vector", "vectorstore", "pinecone", "milvus", "rag", "embeddings", "similarity-search"],
+    "homepage": "https://github.com/GoCodeAlone/workflow-plugin-vectorstore",
+    "repository": "https://github.com/GoCodeAlone/workflow-plugin-vectorstore",
     "capabilities": {
         "configProvider": false,
-        "moduleTypes": [],
-        "stepTypes": [],
+        "moduleTypes": ["vectorstore.provider"],
+        "stepTypes": [
+            "step.vector_upsert",
+            "step.vector_query",
+            "step.vector_fetch",
+            "step.vector_delete",
+            "step.vector_create_index",
+            "step.vector_list_indexes",
+            "step.vector_describe_index"
+        ],
         "triggerTypes": []
     }
 }

@@ -1,28 +1,24 @@
 package internal
 
 import (
+	"fmt"
+
 	sdk "github.com/GoCodeAlone/workflow/plugin/external/sdk"
 )
 
-// Manifest returns the plugin metadata used by the workflow engine for
+// Manifest holds the plugin metadata used by the workflow engine for
 // discovery and capability negotiation.
 var Manifest = sdk.PluginManifest{
-	Name:        "workflow-plugin-TEMPLATE",
+	Name:        "workflow-plugin-vectorstore",
 	Version:     "0.1.0",
-	Description: "TEMPLATE plugin for the workflow engine",
 	Author:      "GoCodeAlone",
-	License:     "MIT",
-	ModuleTypes: []string{
-		// "example.module_type",
-	},
-	StepTypes: []string{
-		// "step.example_action",
-	},
+	Description: "Vector database integration (Pinecone, Milvus) for RAG pipelines",
 }
 
 type plugin struct{}
 
-// NewPlugin creates a new plugin instance.
+// NewPlugin creates a new plugin instance implementing PluginProvider,
+// ModuleProvider, and StepProvider.
 func NewPlugin() sdk.PluginProvider {
 	return &plugin{}
 }
@@ -31,14 +27,54 @@ func (p *plugin) Manifest() sdk.PluginManifest {
 	return Manifest
 }
 
-func (p *plugin) ModuleFactories() map[string]sdk.ModuleFactory {
-	return map[string]sdk.ModuleFactory{
-		// "example.module_type": NewExampleModuleFactory(),
+// --- ModuleProvider ---
+
+func (p *plugin) ModuleTypes() []string {
+	return []string{
+		"vectorstore.provider",
 	}
 }
 
-func (p *plugin) StepFactories() map[string]sdk.StepFactory {
-	return map[string]sdk.StepFactory{
-		// "step.example_action": NewExampleStepFactory(),
+func (p *plugin) CreateModule(typeName, name string, config map[string]any) (sdk.ModuleInstance, error) {
+	switch typeName {
+	case "vectorstore.provider":
+		return NewProviderModule(name, config), nil
+	default:
+		return nil, fmt.Errorf("unknown module type %q", typeName)
+	}
+}
+
+// --- StepProvider ---
+
+func (p *plugin) StepTypes() []string {
+	return []string{
+		"step.vector_upsert",
+		"step.vector_query",
+		"step.vector_fetch",
+		"step.vector_delete",
+		"step.vector_create_index",
+		"step.vector_list_indexes",
+		"step.vector_describe_index",
+	}
+}
+
+func (p *plugin) CreateStep(typeName, name string, config map[string]any) (sdk.StepInstance, error) {
+	switch typeName {
+	case "step.vector_upsert":
+		return &VectorUpsertStep{config: config}, nil
+	case "step.vector_query":
+		return &VectorQueryStep{config: config}, nil
+	case "step.vector_fetch":
+		return &VectorFetchStep{config: config}, nil
+	case "step.vector_delete":
+		return &VectorDeleteStep{config: config}, nil
+	case "step.vector_create_index":
+		return &VectorCreateIndexStep{config: config}, nil
+	case "step.vector_list_indexes":
+		return &VectorListIndexesStep{config: config}, nil
+	case "step.vector_describe_index":
+		return &VectorDescribeIndexStep{config: config}, nil
+	default:
+		return nil, fmt.Errorf("unknown step type %q", typeName)
 	}
 }

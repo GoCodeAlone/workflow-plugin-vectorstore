@@ -1,6 +1,6 @@
-# CLAUDE.md — Workflow Plugin Template
+# CLAUDE.md — workflow-plugin-vectorstore
 
-External gRPC plugin for the GoCodeAlone/workflow engine.
+Vector database integration plugin (Pinecone, Milvus) for RAG pipelines. External gRPC plugin for the GoCodeAlone/workflow engine.
 
 ## Build & Test
 
@@ -12,32 +12,35 @@ go test ./... -v -race -count=1
 ## Cross-compile for deployment
 
 ```sh
-GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o workflow-plugin-TEMPLATE ./cmd/workflow-plugin-TEMPLATE/
+GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="-s -w" -o workflow-plugin-vectorstore ./cmd/workflow-plugin-vectorstore/
 ```
 
 ## Structure
 
-- `cmd/workflow-plugin-TEMPLATE/main.go` — Plugin entry point (calls `sdk.Serve`)
-- `internal/plugin.go` — Plugin manifest, module factories, step factories
-- `internal/` — All module and step implementations
+- `cmd/workflow-plugin-vectorstore/main.go` — Plugin entry point (calls `sdk.Serve`)
+- `internal/plugin.go` — PluginProvider + ModuleProvider + StepProvider
+- `internal/vectorstore.go` — VectorStoreProvider interface and domain types
+- `internal/registry.go` — Global provider registry (module name → adapter)
+- `internal/pinecone_adapter.go` — Pinecone adapter (go-pinecone/v5)
+- `internal/milvus_adapter.go` — Milvus adapter (stub, TODO)
+- `internal/module_provider.go` — `vectorstore.provider` module implementation
+- `internal/steps.go` — All 7 step type implementations
+- `internal/helpers.go` — Config parsing utilities
 - `plugin.json` — Capability manifest for the workflow registry
-- `.goreleaser.yaml` — GoReleaser v2 config for cross-platform releases
-- `.github/workflows/ci.yml` — CI on push/PR (build + test)
-- `.github/workflows/release.yml` — Release on v* tag push (GoReleaser)
 
-## Adding a Module Type
+## Module
 
-1. Create `internal/module_example.go` implementing the module
-2. Register in `internal/plugin.go` ModuleFactories()
-3. Add to `plugin.json` capabilities.moduleTypes
-4. Add tests in `internal/module_example_test.go`
+- `vectorstore.provider` — Initializes a Pinecone or Milvus adapter and registers it by module name.
 
-## Adding a Step Type
+## Step Types
 
-1. Create `internal/step_example.go` implementing the step
-2. Register in `internal/plugin.go` StepFactories()
-3. Add to `plugin.json` capabilities.stepTypes
-4. Add tests in `internal/step_example_test.go`
+- `step.vector_upsert` — Upsert vectors with IDs, values, and metadata
+- `step.vector_query` — Similarity search returning scored matches
+- `step.vector_fetch` — Fetch vectors by ID
+- `step.vector_delete` — Delete by IDs or metadata filter
+- `step.vector_create_index` — Create a new vector index
+- `step.vector_list_indexes` — List all indexes
+- `step.vector_describe_index` — Get index info (dimension, metric, count)
 
 ## Releasing
 

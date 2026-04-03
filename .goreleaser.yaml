@@ -5,9 +5,9 @@ before:
     - go mod tidy
 
 builds:
-  - id: workflow-plugin-TEMPLATE
-    main: ./cmd/workflow-plugin-TEMPLATE
-    binary: workflow-plugin-TEMPLATE
+  - id: workflow-plugin-vectorstore
+    main: ./cmd/workflow-plugin-vectorstore
+    binary: workflow-plugin-vectorstore
     env:
       - CGO_ENABLED=0
     goos:
