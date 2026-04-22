@@ -6,11 +6,15 @@ import (
 	sdk "github.com/GoCodeAlone/workflow/plugin/external/sdk"
 )
 
+// Version is set at build time via -ldflags
+// "-X github.com/GoCodeAlone/workflow-plugin-vectorstore/internal.Version=X.Y.Z"
+var Version = "dev"
+
 // Manifest holds the plugin metadata used by the workflow engine for
 // discovery and capability negotiation.
 var Manifest = sdk.PluginManifest{
 	Name:        "workflow-plugin-vectorstore",
-	Version:     "0.1.0",
+	Version:     Version,
 	Author:      "GoCodeAlone",
 	Description: "Vector database integration (Pinecone, Milvus) for RAG pipelines",
 }
