@@ -15,3 +15,30 @@ jobs:
       - run: go build ./...
       - run: go test ./... -v -race -count=1
       - run: go vet ./...
+
+  wfctl-strict-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Assert plugin.json exists
+        run: test -f plugin.json || (echo "plugin.json is missing" && exit 1)
+      - name: Assert plugin.contracts.json exists
+        run: test -f plugin.contracts.json || (echo "plugin.contracts.json is missing" && exit 1)
+      - name: Validate plugin manifest structure (wfctl)
+        run: |
+          go run github.com/GoCodeAlone/workflow/cmd/wfctl@v0.3.56 plugin validate \
+            --file plugin.json 2>&1 | tee /tmp/wfctl-validate.txt || {
+            # Fail only on missing plugin.json or malformed manifest; ignore the
+            # "downloads required" error which only applies to registry publishing.
+            grep -v "downloads:" /tmp/wfctl-validate.txt | grep -q "^  -" && exit 1
+            echo "Note: 'downloads' entry is not required for development builds."
+          }
+      - name: Validate strict contract descriptors
+        run: |
+          go test ./internal/ \
+            -run "TestContractsFile|TestPluginJSON|TestSchemaProvider" \
+            -v -count=1
+
