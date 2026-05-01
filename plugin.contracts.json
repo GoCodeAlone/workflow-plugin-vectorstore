@@ -1,0 +1,237 @@
+{
+    "version": "1",
+    "plugin": "workflow-plugin-vectorstore",
+    "modules": {
+        "vectorstore.provider": {
+            "description": "Initializes a Pinecone or Milvus adapter and registers it by module name for use by vector step types.",
+            "required_inputs": {
+                "provider": {
+                    "type": "string",
+                    "description": "Backend provider: 'pinecone' or 'milvus'."
+                },
+                "api_key": {
+                    "type": "string",
+                    "description": "API key for authenticating with the vector database service."
+                }
+            },
+            "optional_inputs": {
+                "environment": {
+                    "type": "string",
+                    "description": "Environment name (used by legacy Pinecone environments)."
+                },
+                "host": {
+                    "type": "string",
+                    "description": "Custom host URL for self-hosted or private-link endpoints."
+                },
+                "namespace": {
+                    "type": "string",
+                    "description": "Default namespace for all vector operations in this module instance."
+                },
+                "index_name": {
+                    "type": "string",
+                    "description": "Default index name for operations that do not specify one explicitly."
+                }
+            },
+            "outputs": {}
+        }
+    },
+    "steps": {
+        "step.vector_upsert": {
+            "description": "Upsert vectors (with IDs, values, and metadata) into the configured vector store index.",
+            "required_inputs": {
+                "module": {
+                    "type": "string",
+                    "description": "Name of the vectorstore.provider module instance to use."
+                },
+                "vectors": {
+                    "type": "slice",
+                    "description": "Array of vector objects, each with 'id' (string), 'values' ([]float), and optional 'metadata' (map)."
+                }
+            },
+            "optional_inputs": {},
+            "outputs": {
+                "upserted_count": {
+                    "type": "int",
+                    "description": "Number of vectors successfully upserted."
+                }
+            }
+        },
+        "step.vector_query": {
+            "description": "Perform a similarity search and return the top-K nearest matches.",
+            "required_inputs": {
+                "module": {
+                    "type": "string",
+                    "description": "Name of the vectorstore.provider module instance to use."
+                },
+                "vector": {
+                    "type": "slice",
+                    "description": "The query vector (array of float values) to search with."
+                }
+            },
+            "optional_inputs": {
+                "top_k": {
+                    "type": "int",
+                    "description": "Maximum number of results to return.",
+                    "default": 10
+                },
+                "filter": {
+                    "type": "map",
+                    "description": "Optional metadata filter map to narrow the search."
+                }
+            },
+            "outputs": {
+                "matches": {
+                    "type": "slice",
+                    "description": "Matched vectors, each with 'id', 'score', 'values', and 'metadata'."
+                },
+                "count": {
+                    "type": "int",
+                    "description": "Total number of matches returned."
+                }
+            }
+        },
+        "step.vector_fetch": {
+            "description": "Fetch vectors by their IDs from the vector store.",
+            "required_inputs": {
+                "module": {
+                    "type": "string",
+                    "description": "Name of the vectorstore.provider module instance to use."
+                },
+                "ids": {
+                    "type": "slice",
+                    "description": "List of vector IDs to fetch."
+                }
+            },
+            "optional_inputs": {},
+            "outputs": {
+                "vectors": {
+                    "type": "slice",
+                    "description": "Fetched vectors, each with 'id', 'values', and 'metadata'."
+                },
+                "count": {
+                    "type": "int",
+                    "description": "Number of vectors returned."
+                }
+            }
+        },
+        "step.vector_delete": {
+            "description": "Delete vectors by IDs or by a metadata filter. Exactly one of 'ids' or 'filter' must be provided.",
+            "required_inputs": {
+                "module": {
+                    "type": "string",
+                    "description": "Name of the vectorstore.provider module instance to use."
+                }
+            },
+            "optional_inputs": {
+                "ids": {
+                    "type": "slice",
+                    "description": "List of vector IDs to delete. Mutually exclusive with 'filter'."
+                },
+                "filter": {
+                    "type": "map",
+                    "description": "Metadata filter for bulk deletion. Mutually exclusive with 'ids'."
+                }
+            },
+            "outputs": {
+                "deleted_count": {
+                    "type": "int",
+                    "description": "Number of vectors deleted (set when deleting by IDs)."
+                },
+                "deleted_by_filter": {
+                    "type": "bool",
+                    "description": "True when deletion was performed by metadata filter."
+                }
+            }
+        },
+        "step.vector_create_index": {
+            "description": "Create a new vector index in the configured vector store.",
+            "required_inputs": {
+                "module": {
+                    "type": "string",
+                    "description": "Name of the vectorstore.provider module instance to use."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Name of the index to create."
+                },
+                "dimension": {
+                    "type": "int",
+                    "description": "Vector dimension (must match your embedding model's output size)."
+                },
+                "cloud": {
+                    "type": "string",
+                    "description": "Cloud provider: 'aws', 'gcp', or 'azure'."
+                }
+            },
+            "optional_inputs": {
+                "metric": {
+                    "type": "string",
+                    "description": "Similarity metric: 'cosine', 'dotproduct', or 'euclidean'.",
+                    "default": "cosine"
+                },
+                "region": {
+                    "type": "string",
+                    "description": "Cloud region (e.g. 'us-east-1')."
+                }
+            },
+            "outputs": {
+                "created": {
+                    "type": "string",
+                    "description": "Name of the newly created index."
+                }
+            }
+        },
+        "step.vector_list_indexes": {
+            "description": "List all vector indexes available in the configured vector store.",
+            "required_inputs": {
+                "module": {
+                    "type": "string",
+                    "description": "Name of the vectorstore.provider module instance to use."
+                }
+            },
+            "optional_inputs": {},
+            "outputs": {
+                "indexes": {
+                    "type": "slice",
+                    "description": "List of index descriptors, each with 'name', 'dimension', 'metric', and 'vector_count'."
+                },
+                "count": {
+                    "type": "int",
+                    "description": "Total number of indexes returned."
+                }
+            }
+        },
+        "step.vector_describe_index": {
+            "description": "Describe an existing vector index, returning its dimension, metric, and vector count.",
+            "required_inputs": {
+                "module": {
+                    "type": "string",
+                    "description": "Name of the vectorstore.provider module instance to use."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Name of the index to describe."
+                }
+            },
+            "optional_inputs": {},
+            "outputs": {
+                "name": {
+                    "type": "string",
+                    "description": "Index name."
+                },
+                "dimension": {
+                    "type": "int",
+                    "description": "Vector dimension of the index."
+                },
+                "metric": {
+                    "type": "string",
+                    "description": "Distance metric used by the index."
+                },
+                "vector_count": {
+                    "type": "int",
+                    "description": "Total number of vectors stored in the index."
+                }
+            }
+        }
+    }
+}
