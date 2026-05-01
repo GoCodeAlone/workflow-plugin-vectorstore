@@ -22,7 +22,9 @@ var Manifest = sdk.PluginManifest{
 type plugin struct{}
 
 // NewPlugin creates a new plugin instance implementing PluginProvider,
-// ModuleProvider, StepProvider, and SchemaProvider.
+// ModuleProvider, StepProvider, and SchemaProvider. SchemaProvider exposes
+// module config schemas over gRPC so host engines and tooling (MCP, LSP,
+// wfctl) can provide config guidance without loading the plugin binary.
 func NewPlugin() sdk.PluginProvider {
 	return &plugin{}
 }

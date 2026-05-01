@@ -59,8 +59,8 @@ func TestSchemaProvider_VectorstoreProviderSchema(t *testing.T) {
 	var providerSchema *sdk.ModuleSchemaData
 	for _, s := range sp.ModuleSchemas() {
 		if s.Type == "vectorstore.provider" {
-			s := s // copy
-			providerSchema = &s
+			captured := s // shadow loop variable to take address safely
+			providerSchema = &captured
 			break
 		}
 	}
