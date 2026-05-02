@@ -3,11 +3,11 @@
     "plugin": "workflow-plugin-vectorstore",
     "modules": {
         "vectorstore.provider": {
-            "description": "Initializes a Pinecone or Milvus adapter and registers it by module name for use by vector step types.",
+            "description": "Initializes a Pinecone adapter and registers it by module name for use by vector step types. Milvus support is planned but not yet implemented.",
             "required_inputs": {
                 "provider": {
                     "type": "string",
-                    "description": "Backend provider: 'pinecone' or 'milvus'."
+                    "description": "Backend provider. Currently only 'pinecone' is supported (milvus is planned but not yet implemented)."
                 },
                 "api_key": {
                     "type": "string",

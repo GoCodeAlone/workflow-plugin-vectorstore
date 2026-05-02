@@ -96,14 +96,14 @@ func (p *plugin) ModuleSchemas() []sdk.ModuleSchemaData {
 			Type:        "vectorstore.provider",
 			Label:       "Vector Store Provider",
 			Category:    "Vector Database",
-			Description: "Initializes a Pinecone or Milvus adapter and registers it by module name for use by vector step types.",
+			Description: "Initializes a Pinecone adapter and registers it by module name for use by vector step types. Milvus support is planned but not yet implemented.",
 			ConfigFields: []sdk.ConfigField{
 				{
 					Name:        "provider",
 					Type:        "string",
-					Description: "Backend provider: 'pinecone' or 'milvus'.",
+					Description: "Backend provider. Currently only 'pinecone' is supported (milvus is planned but not yet implemented).",
 					Required:    true,
-					Options:     []string{"pinecone", "milvus"},
+					Options:     []string{"pinecone"},
 				},
 				{
 					Name:        "api_key",

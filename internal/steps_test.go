@@ -211,6 +211,21 @@ func TestVectorDeleteStep_NoIDsOrFilter(t *testing.T) {
 	}
 }
 
+func TestVectorDeleteStep_BothIDsAndFilter(t *testing.T) {
+	setupMock(t)
+	step := &internal.VectorDeleteStep{}
+	cfg := map[string]any{
+		"module": "test-vs",
+		"ids":    []any{"v1"},
+		"filter": map[string]any{"category": "old"},
+	}
+
+	_, err := step.Execute(context.Background(), nil, nil, nil, nil, cfg)
+	if err == nil {
+		t.Error("expected error when both ids and filter are provided")
+	}
+}
+
 func TestVectorCreateIndexStep(t *testing.T) {
 	setupMock(t)
 	step := &internal.VectorCreateIndexStep{}

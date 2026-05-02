@@ -142,6 +142,10 @@ func (s *VectorDeleteStep) Execute(ctx context.Context, triggerData map[string]a
 	ids := parseStringSlice(merged["ids"])
 	filter, _ := merged["filter"].(map[string]any)
 
+	if len(ids) > 0 && filter != nil {
+		return nil, fmt.Errorf("vector_delete: 'ids' and 'filter' are mutually exclusive — provide exactly one")
+	}
+
 	if len(ids) > 0 {
 		if err := p.Delete(ctx, ids); err != nil {
 			return nil, fmt.Errorf("vector_delete: %w", err)
