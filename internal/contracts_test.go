@@ -30,10 +30,16 @@ func TestSchemaProvider_ImplementedByPlugin(t *testing.T) {
 func TestSchemaProvider_CoversAllModuleTypes(t *testing.T) {
 	p := internal.NewPlugin()
 
-	mp := p.(interface {
+	mp, ok := p.(interface {
 		ModuleTypes() []string
 	})
-	sp := p.(sdk.SchemaProvider)
+	if !ok {
+		t.Fatal("plugin does not implement ModuleTypes()")
+	}
+	sp, ok := p.(sdk.SchemaProvider)
+	if !ok {
+		t.Fatal("plugin does not implement sdk.SchemaProvider")
+	}
 
 	moduleTypes := mp.ModuleTypes()
 	schemas := sp.ModuleSchemas()
@@ -142,7 +148,10 @@ func TestContractsFile_CoversAllModuleTypes(t *testing.T) {
 	}
 
 	p := internal.NewPlugin()
-	mp := p.(interface{ ModuleTypes() []string })
+	mp, ok := p.(interface{ ModuleTypes() []string })
+	if !ok {
+		t.Fatal("plugin does not implement ModuleTypes()")
+	}
 
 	for _, mt := range mp.ModuleTypes() {
 		desc, ok := cf.Modules[mt]
@@ -169,7 +178,10 @@ func TestContractsFile_CoversAllStepTypes(t *testing.T) {
 	}
 
 	p := internal.NewPlugin()
-	sp := p.(interface{ StepTypes() []string })
+	sp, ok := p.(interface{ StepTypes() []string })
+	if !ok {
+		t.Fatal("plugin does not implement StepTypes()")
+	}
 
 	for _, st := range sp.StepTypes() {
 		desc, ok := cf.Steps[st]

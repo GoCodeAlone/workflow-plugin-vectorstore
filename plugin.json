@@ -141,7 +141,7 @@
         {
             "type": "step.vector_delete",
             "plugin": "workflow-plugin-vectorstore",
-            "description": "Delete vectors by IDs or by a metadata filter.",
+            "description": "Delete vectors by IDs or by a metadata filter. Exactly one of 'ids' or 'filter' must be provided; supplying both is an error.",
             "configFields": [
                 {
                     "key": "module",

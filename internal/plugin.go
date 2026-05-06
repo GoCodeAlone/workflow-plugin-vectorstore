@@ -112,12 +112,6 @@ func (p *plugin) ModuleSchemas() []sdk.ModuleSchemaData {
 					Required:    true,
 				},
 				{
-					Name:        "environment",
-					Type:        "string",
-					Description: "Environment name (used by legacy Pinecone environments).",
-					Required:    false,
-				},
-				{
 					Name:        "host",
 					Type:        "string",
 					Description: "Custom host URL for self-hosted or private-link endpoints.",

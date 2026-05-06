@@ -15,10 +15,6 @@
                 }
             },
             "optional_inputs": {
-                "environment": {
-                    "type": "string",
-                    "description": "Environment name (used by legacy Pinecone environments)."
-                },
                 "host": {
                     "type": "string",
                     "description": "Custom host URL for self-hosted or private-link endpoints."
