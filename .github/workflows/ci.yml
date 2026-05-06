@@ -7,6 +7,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
@@ -15,3 +17,40 @@ jobs:
       - run: go build ./...
       - run: go test ./... -v -race -count=1
       - run: go vet ./...
+
+  wfctl-strict-contracts:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - name: Assert plugin.json exists
+        run: test -f plugin.json || (echo "plugin.json is missing" && exit 1)
+      - name: Assert plugin.contracts.json exists
+        run: test -f plugin.contracts.json || (echo "plugin.contracts.json is missing" && exit 1)
+      - name: Validate plugin manifest structure (wfctl)
+        run: |
+          go run github.com/GoCodeAlone/workflow/cmd/wfctl@v0.3.56 plugin validate \
+            --file plugin.json 2>&1 | tee /tmp/wfctl-validate.txt
+          WFCTL_EXIT=${PIPESTATUS[0]}
+          if [ "$WFCTL_EXIT" -ne 0 ]; then
+            # Allow only the specific "downloads required" validation error, which only
+            # applies to registry publishing, not development builds. Any other validation
+            # line starting with "  -" (the wfctl error format) fails the job.
+            if grep -qF "downloads: external plugins must have at least one download entry" /tmp/wfctl-validate.txt \
+               && ! grep -v "downloads:" /tmp/wfctl-validate.txt | grep -q "^  -"; then
+              echo "Note: Ignoring expected 'downloads' validation error (not required for development builds)."
+            else
+              echo "wfctl validation failed with unexpected errors:" >&2
+              exit 1
+            fi
+          fi
+      - name: Validate strict contract descriptors
+        run: |
+          go test ./internal/ \
+            -run "TestContractsFile|TestPluginJSON|TestSchemaProvider" \
+            -v -count=1
+
