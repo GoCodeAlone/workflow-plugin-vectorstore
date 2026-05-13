@@ -1,19 +1,29 @@
 {
     "name": "workflow-plugin-vectorstore",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Vector database integration (Pinecone, Milvus) for RAG pipelines",
     "author": "GoCodeAlone",
     "license": "MIT",
     "type": "external",
     "tier": "community",
     "private": false,
-    "minEngineVersion": "0.3.56",
-    "keywords": ["vector", "vectorstore", "pinecone", "milvus", "rag", "embeddings", "similarity-search"],
+    "minEngineVersion": "0.51.7",
+    "keywords": [
+        "vector",
+        "vectorstore",
+        "pinecone",
+        "milvus",
+        "rag",
+        "embeddings",
+        "similarity-search"
+    ],
     "homepage": "https://github.com/GoCodeAlone/workflow-plugin-vectorstore",
     "repository": "https://github.com/GoCodeAlone/workflow-plugin-vectorstore",
     "capabilities": {
         "configProvider": false,
-        "moduleTypes": ["vectorstore.provider"],
+        "moduleTypes": [
+            "vectorstore.provider"
+        ],
         "stepTypes": [
             "step.vector_upsert",
             "step.vector_query",
@@ -209,7 +219,11 @@
                     "key": "cloud",
                     "label": "Cloud Provider",
                     "type": "select",
-                    "options": ["aws", "gcp", "azure"],
+                    "options": [
+                        "aws",
+                        "gcp",
+                        "azure"
+                    ],
                     "description": "Cloud provider to host the index on.",
                     "required": true
                 },
@@ -217,7 +231,11 @@
                     "key": "metric",
                     "label": "Distance Metric",
                     "type": "select",
-                    "options": ["cosine", "dotproduct", "euclidean"],
+                    "options": [
+                        "cosine",
+                        "dotproduct",
+                        "euclidean"
+                    ],
                     "description": "Similarity metric used for vector comparison.",
                     "required": false,
                     "defaultValue": "cosine"
