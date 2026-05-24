@@ -8,7 +8,7 @@ import (
 
 // Version is set at build time via -ldflags
 // "-X github.com/GoCodeAlone/workflow-plugin-vectorstore/internal.Version=X.Y.Z"
-var Version = "dev"
+var Version = "0.0.0"
 
 // Manifest holds the plugin metadata used by the workflow engine for
 // discovery and capability negotiation.
