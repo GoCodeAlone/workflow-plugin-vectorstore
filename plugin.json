@@ -1,329 +1,337 @@
 {
-    "name": "workflow-plugin-vectorstore",
-    "version": "0.1.3",
-    "description": "Vector database integration (Pinecone, Milvus) for RAG pipelines",
-    "author": "GoCodeAlone",
-    "license": "MIT",
-    "type": "external",
-    "tier": "community",
-    "private": false,
-    "minEngineVersion": "0.51.7",
-    "keywords": [
-        "vector",
-        "vectorstore",
-        "pinecone",
-        "milvus",
-        "rag",
-        "embeddings",
-        "similarity-search"
+  "name": "workflow-plugin-vectorstore",
+  "version": "0.1.3",
+  "description": "Vector database integration (Pinecone, Milvus) for RAG pipelines",
+  "author": "GoCodeAlone",
+  "license": "MIT",
+  "type": "external",
+  "tier": "community",
+  "private": false,
+  "minEngineVersion": "0.51.7",
+  "required_secrets": [
+    {
+      "name": "PINECONE_API_KEY",
+      "sensitive": true,
+      "description": "Pinecone API key (provider: pinecone). Other vector providers (e.g. Milvus) use their own auth. Referenced as ${PINECONE_API_KEY}.",
+      "prompt": "Pinecone API key"
+    }
+  ],
+  "keywords": [
+    "vector",
+    "vectorstore",
+    "pinecone",
+    "milvus",
+    "rag",
+    "embeddings",
+    "similarity-search"
+  ],
+  "homepage": "https://github.com/GoCodeAlone/workflow-plugin-vectorstore",
+  "repository": "https://github.com/GoCodeAlone/workflow-plugin-vectorstore",
+  "capabilities": {
+    "configProvider": false,
+    "moduleTypes": [
+      "vectorstore.provider"
     ],
-    "homepage": "https://github.com/GoCodeAlone/workflow-plugin-vectorstore",
-    "repository": "https://github.com/GoCodeAlone/workflow-plugin-vectorstore",
-    "capabilities": {
-        "configProvider": false,
-        "moduleTypes": [
-            "vectorstore.provider"
-        ],
-        "stepTypes": [
-            "step.vector_upsert",
-            "step.vector_query",
-            "step.vector_fetch",
-            "step.vector_delete",
-            "step.vector_create_index",
-            "step.vector_list_indexes",
-            "step.vector_describe_index"
-        ],
-        "triggerTypes": []
-    },
-    "stepSchemas": [
+    "stepTypes": [
+      "step.vector_upsert",
+      "step.vector_query",
+      "step.vector_fetch",
+      "step.vector_delete",
+      "step.vector_create_index",
+      "step.vector_list_indexes",
+      "step.vector_describe_index"
+    ],
+    "triggerTypes": []
+  },
+  "stepSchemas": [
+    {
+      "type": "step.vector_upsert",
+      "plugin": "workflow-plugin-vectorstore",
+      "description": "Upsert vectors (with IDs, values, and metadata) into the configured vector store index.",
+      "configFields": [
         {
-            "type": "step.vector_upsert",
-            "plugin": "workflow-plugin-vectorstore",
-            "description": "Upsert vectors (with IDs, values, and metadata) into the configured vector store index.",
-            "configFields": [
-                {
-                    "key": "module",
-                    "label": "Module",
-                    "type": "string",
-                    "description": "Name of the vectorstore.provider module instance to use.",
-                    "required": true
-                },
-                {
-                    "key": "vectors",
-                    "label": "Vectors",
-                    "type": "array",
-                    "arrayItemType": "json",
-                    "description": "Array of vector objects, each with 'id' (string), 'values' ([]float), and optional 'metadata' (map).",
-                    "required": true
-                }
-            ],
-            "outputs": [
-                {
-                    "key": "upserted_count",
-                    "type": "number",
-                    "description": "Number of vectors successfully upserted."
-                }
-            ]
+          "key": "module",
+          "label": "Module",
+          "type": "string",
+          "description": "Name of the vectorstore.provider module instance to use.",
+          "required": true
         },
         {
-            "type": "step.vector_query",
-            "plugin": "workflow-plugin-vectorstore",
-            "description": "Perform a similarity search against the vector store and return the top-K nearest matches.",
-            "configFields": [
-                {
-                    "key": "module",
-                    "label": "Module",
-                    "type": "string",
-                    "description": "Name of the vectorstore.provider module instance to use.",
-                    "required": true
-                },
-                {
-                    "key": "vector",
-                    "label": "Query Vector",
-                    "type": "array",
-                    "arrayItemType": "number",
-                    "description": "The query vector (array of float values) to search with.",
-                    "required": true
-                },
-                {
-                    "key": "top_k",
-                    "label": "Top K",
-                    "type": "number",
-                    "description": "Maximum number of results to return.",
-                    "required": false,
-                    "defaultValue": 10
-                },
-                {
-                    "key": "filter",
-                    "label": "Metadata Filter",
-                    "type": "json",
-                    "description": "Optional metadata filter map to narrow the search.",
-                    "required": false
-                }
-            ],
-            "outputs": [
-                {
-                    "key": "matches",
-                    "type": "array",
-                    "description": "Matched vectors, each containing 'id', 'score', 'values', and 'metadata'."
-                },
-                {
-                    "key": "count",
-                    "type": "number",
-                    "description": "Total number of matches returned."
-                }
-            ]
-        },
-        {
-            "type": "step.vector_fetch",
-            "plugin": "workflow-plugin-vectorstore",
-            "description": "Fetch vectors by their IDs from the vector store.",
-            "configFields": [
-                {
-                    "key": "module",
-                    "label": "Module",
-                    "type": "string",
-                    "description": "Name of the vectorstore.provider module instance to use.",
-                    "required": true
-                },
-                {
-                    "key": "ids",
-                    "label": "Vector IDs",
-                    "type": "array",
-                    "arrayItemType": "string",
-                    "description": "List of vector IDs to fetch.",
-                    "required": true
-                }
-            ],
-            "outputs": [
-                {
-                    "key": "vectors",
-                    "type": "array",
-                    "description": "Fetched vectors, each containing 'id', 'values', and 'metadata'."
-                },
-                {
-                    "key": "count",
-                    "type": "number",
-                    "description": "Number of vectors returned."
-                }
-            ]
-        },
-        {
-            "type": "step.vector_delete",
-            "plugin": "workflow-plugin-vectorstore",
-            "description": "Delete vectors by IDs or by a metadata filter. Exactly one of 'ids' or 'filter' must be provided; supplying both is an error.",
-            "configFields": [
-                {
-                    "key": "module",
-                    "label": "Module",
-                    "type": "string",
-                    "description": "Name of the vectorstore.provider module instance to use.",
-                    "required": true
-                },
-                {
-                    "key": "ids",
-                    "label": "Vector IDs",
-                    "type": "array",
-                    "arrayItemType": "string",
-                    "description": "List of vector IDs to delete. Mutually exclusive with 'filter'.",
-                    "required": false
-                },
-                {
-                    "key": "filter",
-                    "label": "Metadata Filter",
-                    "type": "json",
-                    "description": "Metadata filter for bulk deletion. Mutually exclusive with 'ids'.",
-                    "required": false
-                }
-            ],
-            "outputs": [
-                {
-                    "key": "deleted_count",
-                    "type": "number",
-                    "description": "Number of vectors deleted (set when deleting by IDs)."
-                },
-                {
-                    "key": "deleted_by_filter",
-                    "type": "boolean",
-                    "description": "True when deletion was performed by metadata filter."
-                }
-            ]
-        },
-        {
-            "type": "step.vector_create_index",
-            "plugin": "workflow-plugin-vectorstore",
-            "description": "Create a new vector index in the configured vector store.",
-            "configFields": [
-                {
-                    "key": "module",
-                    "label": "Module",
-                    "type": "string",
-                    "description": "Name of the vectorstore.provider module instance to use.",
-                    "required": true
-                },
-                {
-                    "key": "name",
-                    "label": "Index Name",
-                    "type": "string",
-                    "description": "Name of the index to create.",
-                    "required": true
-                },
-                {
-                    "key": "dimension",
-                    "label": "Dimension",
-                    "type": "number",
-                    "description": "Vector dimension (must match your embedding model's output size).",
-                    "required": true
-                },
-                {
-                    "key": "cloud",
-                    "label": "Cloud Provider",
-                    "type": "select",
-                    "options": [
-                        "aws",
-                        "gcp",
-                        "azure"
-                    ],
-                    "description": "Cloud provider to host the index on.",
-                    "required": true
-                },
-                {
-                    "key": "metric",
-                    "label": "Distance Metric",
-                    "type": "select",
-                    "options": [
-                        "cosine",
-                        "dotproduct",
-                        "euclidean"
-                    ],
-                    "description": "Similarity metric used for vector comparison.",
-                    "required": false,
-                    "defaultValue": "cosine"
-                },
-                {
-                    "key": "region",
-                    "label": "Region",
-                    "type": "string",
-                    "description": "Cloud region to deploy the index in (e.g. 'us-east-1').",
-                    "required": false
-                }
-            ],
-            "outputs": [
-                {
-                    "key": "created",
-                    "type": "string",
-                    "description": "Name of the newly created index."
-                }
-            ]
-        },
-        {
-            "type": "step.vector_list_indexes",
-            "plugin": "workflow-plugin-vectorstore",
-            "description": "List all vector indexes available in the configured vector store.",
-            "configFields": [
-                {
-                    "key": "module",
-                    "label": "Module",
-                    "type": "string",
-                    "description": "Name of the vectorstore.provider module instance to use.",
-                    "required": true
-                }
-            ],
-            "outputs": [
-                {
-                    "key": "indexes",
-                    "type": "array",
-                    "description": "List of index descriptors, each with 'name', 'dimension', 'metric', and 'vector_count'."
-                },
-                {
-                    "key": "count",
-                    "type": "number",
-                    "description": "Total number of indexes returned."
-                }
-            ]
-        },
-        {
-            "type": "step.vector_describe_index",
-            "plugin": "workflow-plugin-vectorstore",
-            "description": "Describe an existing vector index, including its dimension, metric, and vector count.",
-            "configFields": [
-                {
-                    "key": "module",
-                    "label": "Module",
-                    "type": "string",
-                    "description": "Name of the vectorstore.provider module instance to use.",
-                    "required": true
-                },
-                {
-                    "key": "name",
-                    "label": "Index Name",
-                    "type": "string",
-                    "description": "Name of the index to describe.",
-                    "required": true
-                }
-            ],
-            "outputs": [
-                {
-                    "key": "name",
-                    "type": "string",
-                    "description": "Index name."
-                },
-                {
-                    "key": "dimension",
-                    "type": "number",
-                    "description": "Vector dimension of the index."
-                },
-                {
-                    "key": "metric",
-                    "type": "string",
-                    "description": "Distance metric used by the index."
-                },
-                {
-                    "key": "vector_count",
-                    "type": "number",
-                    "description": "Total number of vectors stored in the index."
-                }
-            ]
+          "key": "vectors",
+          "label": "Vectors",
+          "type": "array",
+          "arrayItemType": "json",
+          "description": "Array of vector objects, each with 'id' (string), 'values' ([]float), and optional 'metadata' (map).",
+          "required": true
         }
-    ]
+      ],
+      "outputs": [
+        {
+          "key": "upserted_count",
+          "type": "number",
+          "description": "Number of vectors successfully upserted."
+        }
+      ]
+    },
+    {
+      "type": "step.vector_query",
+      "plugin": "workflow-plugin-vectorstore",
+      "description": "Perform a similarity search against the vector store and return the top-K nearest matches.",
+      "configFields": [
+        {
+          "key": "module",
+          "label": "Module",
+          "type": "string",
+          "description": "Name of the vectorstore.provider module instance to use.",
+          "required": true
+        },
+        {
+          "key": "vector",
+          "label": "Query Vector",
+          "type": "array",
+          "arrayItemType": "number",
+          "description": "The query vector (array of float values) to search with.",
+          "required": true
+        },
+        {
+          "key": "top_k",
+          "label": "Top K",
+          "type": "number",
+          "description": "Maximum number of results to return.",
+          "required": false,
+          "defaultValue": 10
+        },
+        {
+          "key": "filter",
+          "label": "Metadata Filter",
+          "type": "json",
+          "description": "Optional metadata filter map to narrow the search.",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "matches",
+          "type": "array",
+          "description": "Matched vectors, each containing 'id', 'score', 'values', and 'metadata'."
+        },
+        {
+          "key": "count",
+          "type": "number",
+          "description": "Total number of matches returned."
+        }
+      ]
+    },
+    {
+      "type": "step.vector_fetch",
+      "plugin": "workflow-plugin-vectorstore",
+      "description": "Fetch vectors by their IDs from the vector store.",
+      "configFields": [
+        {
+          "key": "module",
+          "label": "Module",
+          "type": "string",
+          "description": "Name of the vectorstore.provider module instance to use.",
+          "required": true
+        },
+        {
+          "key": "ids",
+          "label": "Vector IDs",
+          "type": "array",
+          "arrayItemType": "string",
+          "description": "List of vector IDs to fetch.",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "key": "vectors",
+          "type": "array",
+          "description": "Fetched vectors, each containing 'id', 'values', and 'metadata'."
+        },
+        {
+          "key": "count",
+          "type": "number",
+          "description": "Number of vectors returned."
+        }
+      ]
+    },
+    {
+      "type": "step.vector_delete",
+      "plugin": "workflow-plugin-vectorstore",
+      "description": "Delete vectors by IDs or by a metadata filter. Exactly one of 'ids' or 'filter' must be provided; supplying both is an error.",
+      "configFields": [
+        {
+          "key": "module",
+          "label": "Module",
+          "type": "string",
+          "description": "Name of the vectorstore.provider module instance to use.",
+          "required": true
+        },
+        {
+          "key": "ids",
+          "label": "Vector IDs",
+          "type": "array",
+          "arrayItemType": "string",
+          "description": "List of vector IDs to delete. Mutually exclusive with 'filter'.",
+          "required": false
+        },
+        {
+          "key": "filter",
+          "label": "Metadata Filter",
+          "type": "json",
+          "description": "Metadata filter for bulk deletion. Mutually exclusive with 'ids'.",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "deleted_count",
+          "type": "number",
+          "description": "Number of vectors deleted (set when deleting by IDs)."
+        },
+        {
+          "key": "deleted_by_filter",
+          "type": "boolean",
+          "description": "True when deletion was performed by metadata filter."
+        }
+      ]
+    },
+    {
+      "type": "step.vector_create_index",
+      "plugin": "workflow-plugin-vectorstore",
+      "description": "Create a new vector index in the configured vector store.",
+      "configFields": [
+        {
+          "key": "module",
+          "label": "Module",
+          "type": "string",
+          "description": "Name of the vectorstore.provider module instance to use.",
+          "required": true
+        },
+        {
+          "key": "name",
+          "label": "Index Name",
+          "type": "string",
+          "description": "Name of the index to create.",
+          "required": true
+        },
+        {
+          "key": "dimension",
+          "label": "Dimension",
+          "type": "number",
+          "description": "Vector dimension (must match your embedding model's output size).",
+          "required": true
+        },
+        {
+          "key": "cloud",
+          "label": "Cloud Provider",
+          "type": "select",
+          "options": [
+            "aws",
+            "gcp",
+            "azure"
+          ],
+          "description": "Cloud provider to host the index on.",
+          "required": true
+        },
+        {
+          "key": "metric",
+          "label": "Distance Metric",
+          "type": "select",
+          "options": [
+            "cosine",
+            "dotproduct",
+            "euclidean"
+          ],
+          "description": "Similarity metric used for vector comparison.",
+          "required": false,
+          "defaultValue": "cosine"
+        },
+        {
+          "key": "region",
+          "label": "Region",
+          "type": "string",
+          "description": "Cloud region to deploy the index in (e.g. 'us-east-1').",
+          "required": false
+        }
+      ],
+      "outputs": [
+        {
+          "key": "created",
+          "type": "string",
+          "description": "Name of the newly created index."
+        }
+      ]
+    },
+    {
+      "type": "step.vector_list_indexes",
+      "plugin": "workflow-plugin-vectorstore",
+      "description": "List all vector indexes available in the configured vector store.",
+      "configFields": [
+        {
+          "key": "module",
+          "label": "Module",
+          "type": "string",
+          "description": "Name of the vectorstore.provider module instance to use.",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "key": "indexes",
+          "type": "array",
+          "description": "List of index descriptors, each with 'name', 'dimension', 'metric', and 'vector_count'."
+        },
+        {
+          "key": "count",
+          "type": "number",
+          "description": "Total number of indexes returned."
+        }
+      ]
+    },
+    {
+      "type": "step.vector_describe_index",
+      "plugin": "workflow-plugin-vectorstore",
+      "description": "Describe an existing vector index, including its dimension, metric, and vector count.",
+      "configFields": [
+        {
+          "key": "module",
+          "label": "Module",
+          "type": "string",
+          "description": "Name of the vectorstore.provider module instance to use.",
+          "required": true
+        },
+        {
+          "key": "name",
+          "label": "Index Name",
+          "type": "string",
+          "description": "Name of the index to describe.",
+          "required": true
+        }
+      ],
+      "outputs": [
+        {
+          "key": "name",
+          "type": "string",
+          "description": "Index name."
+        },
+        {
+          "key": "dimension",
+          "type": "number",
+          "description": "Vector dimension of the index."
+        },
+        {
+          "key": "metric",
+          "type": "string",
+          "description": "Distance metric used by the index."
+        },
+        {
+          "key": "vector_count",
+          "type": "number",
+          "description": "Total number of vectors stored in the index."
+        }
+      ]
+    }
+  ]
 }
